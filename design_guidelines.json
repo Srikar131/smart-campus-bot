@@ -1,0 +1,159 @@
+{
+  "identity": {
+    "name": "E1",
+    "persona": "The Anti-AI Designer",
+    "mission": "Create a Smart Campus Bot that fuses 'Ivy League Library' authority with 'Future Tech' intelligence.",
+    "principles": [
+      "Fusion over Imitation: Mix academic serif fonts with cybernetic neon accents.",
+      "Emotion First: Trust and Intelligence.",
+      "Content is King: The answer is the hero.",
+      "Zoom In: Focus on the citation/source details.",
+      "Negative Space: Allow the text to breathe like a well-typeset book."
+    ]
+  },
+  "theme_strategy": {
+    "name": "The Intelligent Archive",
+    "mode": "system",
+    "description": "A dual-personality interface. Light mode feels like a high-end research journal. Dark mode feels like a futuristic command center.",
+    "light_mode": {
+      "background": "#F8F9FA",
+      "foreground": "#1A1A1A",
+      "card": "#FFFFFF",
+      "border": "#E2E8F0"
+    },
+    "dark_mode": {
+      "background": "#0B0F19",
+      "foreground": "#F8F9FA",
+      "card": "#111827",
+      "border": "#1F2937"
+    }
+  },
+  "typography": {
+    "headings": {
+      "family": "Playfair Display, serif",
+      "usage": "All H1-H3 headings. Use font-weight 600 or 700.",
+      "tracking": "tracking-tight"
+    },
+    "body": {
+      "family": "Manrope, sans-serif",
+      "usage": "All paragraph text, UI labels, inputs.",
+      "tracking": "tracking-normal"
+    },
+    "mono": {
+      "family": "JetBrains Mono, monospace",
+      "usage": "Citations, code snippets, document IDs.",
+      "size": "text-xs or text-sm"
+    }
+  },
+  "colors": {
+    "palette": {
+      "primary": {
+        "name": "Academic Teal",
+        "hex": "#0F4C5C",
+        "tailwind": "bg-[#0F4C5C] text-white hover:bg-[#0D3F4D]"
+      },
+      "secondary": {
+        "name": "Electric Indigo",
+        "hex": "#4361EE",
+        "tailwind": "text-[#4361EE]"
+      },
+      "accent": {
+        "name": "Insight Coral",
+        "hex": "#F72585",
+        "tailwind": "text-[#F72585] border-[#F72585]"
+      },
+      "neutral": {
+        "light": "#E0E1DD",
+        "dark": "#1F2937"
+      }
+    },
+    "usage_rules": [
+      "Use Academic Teal for primary actions (Upload, Send).",
+      "Use Electric Indigo for AI-generated text highlights and active states.",
+      "Use Insight Coral sparingly for alerts or 'New Insight' badges.",
+      "NEVER use gradients for text. Use them only for subtle background glows."
+    ]
+  },
+  "layout": {
+    "grid_system": "The Bento Grid (Mode B: Control Room)",
+    "spacing": {
+      "container_padding": "p-6 md:p-12",
+      "element_gap": "gap-6",
+      "section_margin": "my-12"
+    },
+    "structure": {
+      "chat_interface": "Centralized column (max-w-3xl) with floating input bar.",
+      "sidebar": "Collapsible, glassmorphism effect (backdrop-blur-xl).",
+      "dashboard": "Grid of cards for document stats (Uploaded, Processing, Ready)."
+    }
+  },
+  "components": {
+    "style": "Sharp & Technical",
+    "radius": "rounded-sm",
+    "shadows": "shadow-sm hover:shadow-md transition-shadow duration-200",
+    "glassmorphism": {
+      "usage": "Chat input bar, Sidebar, Toast notifications.",
+      "classes": "bg-white/80 dark:bg-black/60 backdrop-blur-xl border border-white/20 shadow-lg"
+    },
+    "specifics": {
+      "buttons": "Uppercase labels, tracking-widest, text-xs, sharp corners.",
+      "cards": "Flat background, 1px border, no shadow by default. Hover lifts slightly.",
+      "inputs": "Minimalist, bottom border focus or full pill shape for chat."
+    }
+  },
+  "visual_enhancers": {
+    "textures": "Subtle noise overlay on the background to mimic paper grain.",
+    "motion": {
+      "hover": "transform -translate-y-1 transition-transform duration-200",
+      "entrance": "animate-in fade-in slide-in-from-bottom-4 duration-500",
+      "chat_bubble": "origin-bottom-left animate-in zoom-in-95 duration-300"
+    },
+    "decorations": [
+      "Use thin 1px lines to connect sections (The 'Tracing Beam' effect).",
+      "Use ASCII art or simple geometric shapes for empty states."
+    ]
+  },
+  "media": {
+    "image_style": "High contrast, academic, or abstract tech.",
+    "images": [
+      {
+        "category": "hero_background",
+        "url": "https://images.unsplash.com/photo-1620555791739-438a95e7ff65?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzl8MHwxfHNlYXJjaHwzfHxhYnN0cmFjdCUyMHRlY2hub2xvZ3klMjBuZXR3b3JrJTIwbm9kZXMlMjBibHVlJTIwbWluaW1hbGlzdHxlbnwwfHx8fDE3NjcyNjYzOTR8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Abstract blue network nodes, use for subtle background overlay."
+      },
+      {
+        "category": "student_life",
+        "url": "https://images.pexels.com/photos/6550462/pexels-photo-6550462.jpeg",
+        "description": "Students studying in a modern library, use for welcome screen or empty state."
+      },
+      {
+        "category": "profile_avatar",
+        "url": "https://images.unsplash.com/photo-1544002176-eacb96b939c9?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzh8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjB1bml2ZXJzaXR5JTIwbGlicmFyeSUyMHN0dWRlbnRzJTIwc3R1ZHlpbmd8ZW58MHx8fHwxNzY3MjY2MzkyfDA&ixlib=rb-4.1.0&q=85",
+        "description": "Professional woman, use for user profile or testimonial."
+      }
+    ],
+    "icons": "Lucide React (default). Use thin stroke (1.5px) for elegance."
+  },
+  "accessibility": {
+    "contrast": "Ensure text is #1A1A1A on light bg, or #F8F9FA on dark bg.",
+    "focus_states": "Visible ring-2 ring-offset-2 ring-[#4361EE].",
+    "reduced_motion": "Respect prefers-reduced-motion media query."
+  },
+  "instructions_to_main_agent": [
+    "1. INSTALL FONTS: Add '@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Playfair+Display:wght@600;700&family=JetBrains+Mono:wght@400&display=swap');' to index.css.",
+    "2. CONFIGURE TAILWIND: Update tailwind.config.js to include the new font families and color palette.",
+    "3. OVERRIDE SHADCN: Modify ui/button.jsx, ui/card.jsx etc. to match the 'Sharp & Technical' style (rounded-sm).",
+    "4. LAYOUT: Build the 'ChatLayout' with a sidebar and main chat area. Use the 'Bento Grid' for the document manager.",
+    "5. DATA-TESTID: Add data-testid to ALL interactive elements (buttons, inputs, cards).",
+    "6. NO TRANSPARENT BG: Ensure headers and floating elements have a solid or blurred background.",
+    "7. FILE EXTENSIONS: Use .js and .jsx as per the project structure."
+  ],
+  "universal_guidelines": [
+    "Do not use generic centered layouts.",
+    "Create depth through layered design elements.",
+    "Use glass-morphism effects with backdrop filters.",
+    "Every interaction needs micro-animations.",
+    "Use 2-3x more spacing than feels comfortable.",
+    "Use 'sonner' for toasts."
+  ]
+}

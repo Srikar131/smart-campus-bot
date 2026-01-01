@@ -1,0 +1,26 @@
+# Smart Campus Bot - Backend Requirements
+# Core Framework
+fastapi==0.110.1
+uvicorn[standard]==0.29.0
+python-dotenv==1.0.1
+python-multipart==0.0.9
+
+# Database
+motor==3.3.2
+pymongo==4.6.2
+
+# Document Processing
+PyPDF2==3.0.1
+python-docx==1.1.0
+
+# AI/ML
+openai==1.14.0
+sentence-transformers==2.5.1
+faiss-cpu==1.7.4
+numpy==1.26.4
+
+# Data Validation
+pydantic==2.6.4
+
+# CORS
+starlette==0.37.2
