@@ -114,7 +114,7 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> List[str]
             chunks.append(chunk)
     
     return chunks
-
+ 
 def rebuild_faiss_index():
     """Rebuild FAISS index from document chunks"""
     global faiss_index, document_chunks, chunk_metadata
@@ -336,7 +336,7 @@ Provide a clear, accurate answer based on the context above. If the information 
             session_id=session_id,
             role="user",
             content=query,
-            sources=[]
+            sources=[]s
         )
         user_msg_dict = user_msg.model_dump()
         user_msg_dict['timestamp'] = user_msg_dict['timestamp'].isoformat()
