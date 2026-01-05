@@ -41,3 +41,5 @@ htmlcov/
 
 # Logs
 *.log
+
+mongodb_data/
