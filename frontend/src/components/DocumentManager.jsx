@@ -1,190 +1,199 @@
-import React, { useState, useRef } from 'react';
-import { Upload, FileText, Trash2, Loader2, CheckCircle, File } from 'lucide-react';
-import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import React, { useState, useRef } from "react";
+import { Upload, FileText, Trash2, Loader2, File, Database, Layers } from "lucide-react";
+import { toast } from "sonner";
+import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
+
+const ACCEPTED = {
+  "application/pdf": "pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+};
+
+const MAX_MB = 50;
+
+function isAccepted(file) {
+  if (ACCEPTED[file.type]) return true;
+  const name = (file.name || "").toLowerCase();
+  return name.endsWith(".pdf") || name.endsWith(".docx");
+}
 
 export function DocumentManager({ documents, onUpload, onDelete, isLoading }) {
   const [isDragging, setIsDragging] = useState(false);
-  const [uploadingFile, setUploadingFile] = useState(null);
-  const fileInputRef = useRef(null);
-
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-  };
-
-  const handleDrop = async (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const files = Array.from(e.dataTransfer.files);
-    await handleFiles(files);
-  };
-
-  const handleFileSelect = async (e) => {
-    const files = Array.from(e.target.files);
-    await handleFiles(files);
-    e.target.value = '';
-  };
+  const [uploading, setUploading] = useState(null);
+  const inputRef = useRef(null);
 
   const handleFiles = async (files) => {
     for (const file of files) {
-      if (file.type === 'application/pdf' || 
-          file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-        setUploadingFile(file.name);
+      if (!isAccepted(file)) {
+        toast.error(`${file.name}: only PDF and DOCX are supported`);
+        continue;
+      }
+      if (file.size > MAX_MB * 1024 * 1024) {
+        toast.error(
+          `${file.name} is ${(file.size / 1024 / 1024).toFixed(1)} MB — over the ${MAX_MB} MB limit`
+        );
+        continue;
+      }
+      setUploading(file.name);
+      try {
         await onUpload(file);
-        setUploadingFile(null);
+      } catch {
+        /* error toast handled upstream */
+      } finally {
+        setUploading(null);
       }
     }
   };
 
-  const getFileIcon = (fileType) => {
-    return fileType === 'pdf' ? (
-      <FileText className="w-5 h-5 text-red-500" />
-    ) : (
-      <File className="w-5 h-5 text-blue-500" />
-    );
+  const onDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    handleFiles(Array.from(e.dataTransfer.files));
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
+  const onSelect = (e) => {
+    handleFiles(Array.from(e.target.files));
+    e.target.value = "";
   };
+
+  const totalChunks = documents.reduce((a, d) => a + (d.chunk_count || 0), 0);
 
   return (
-    <div className="space-y-6">
-      {/* Upload Area */}
+    <div className="mx-auto max-w-3xl space-y-6">
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+        <StatCard icon={Database} label="Documents" value={documents.length} />
+        <StatCard icon={Layers} label="Indexed chunks" value={totalChunks} />
+        <StatCard
+          icon={FileText}
+          label="Status"
+          value={documents.length > 0 ? "Ready" : "Empty"}
+          accent={documents.length > 0}
+        />
+      </div>
+
+      {/* Upload */}
       <div
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-        className={`
-          border-2 border-dashed p-8 text-center cursor-pointer transition-all duration-200
-          ${isDragging 
-            ? 'border-electric-indigo bg-electric-indigo/5' 
-            : 'border-border hover:border-academic-teal hover:bg-academic-teal/5'
-          }
-        `}
-        data-testid="upload-area"
+        onDragOver={(e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={onDrop}
+        onClick={() => inputRef.current?.click()}
+        className={`cursor-pointer rounded-xl border-2 border-dashed p-10 text-center transition-all ${
+          isDragging
+            ? "border-primary bg-primary/5"
+            : "border-border hover:border-primary/50 hover:bg-muted/40"
+        }`}
       >
         <input
-          ref={fileInputRef}
+          ref={inputRef}
           type="file"
           accept=".pdf,.docx"
           multiple
-          onChange={handleFileSelect}
+          onChange={onSelect}
           className="hidden"
-          data-testid="file-input"
         />
         <div className="flex flex-col items-center gap-3">
-          {uploadingFile ? (
+          {uploading ? (
             <>
-              <Loader2 className="w-10 h-10 text-electric-indigo animate-spin" />
-              <p className="text-sm text-muted-foreground">Uploading {uploadingFile}...</p>
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
+              <p className="text-sm font-medium">Indexing {uploading}…</p>
+              <p className="text-xs text-muted-foreground">Extracting text and generating embeddings</p>
             </>
           ) : (
             <>
-              <Upload className="w-10 h-10 text-muted-foreground" strokeWidth={1.5} />
-              <div>
-                <p className="font-medium">Drop files here or click to upload</p>
-                <p className="text-sm text-muted-foreground mt-1">PDF and DOCX files supported</p>
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/10">
+                <Upload className="h-6 w-6 text-primary" strokeWidth={1.8} />
               </div>
+              <p className="font-medium">Drop files here or click to upload</p>
+              <p className="text-xs text-muted-foreground">PDF and DOCX · up to {MAX_MB} MB each</p>
             </>
           )}
         </div>
       </div>
 
-      {/* Document Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card className="text-center">
-          <CardContent className="pt-6">
-            <p className="text-3xl font-heading font-bold text-academic-teal">
-              {documents.length}
-            </p>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground mt-1">
-              Documents
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="text-center">
-          <CardContent className="pt-6">
-            <p className="text-3xl font-heading font-bold text-electric-indigo">
-              {documents.reduce((acc, doc) => acc + (doc.chunk_count || 0), 0)}
-            </p>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground mt-1">
-              Chunks
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="text-center">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-center gap-1">
-              <CheckCircle className="w-6 h-6 text-green-500" />
-            </div>
-            <p className="text-xs uppercase tracking-widest text-muted-foreground mt-1">
-              Ready
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Document List */}
+      {/* Document list */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Uploaded Documents</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <div className="flex items-center justify-between p-5 pb-3">
+          <h3 className="font-heading text-base font-semibold">Uploaded documents</h3>
+          <span className="text-xs text-muted-foreground">{documents.length} total</span>
+        </div>
+        <CardContent className="pt-0">
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+            <div className="flex justify-center py-10">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : documents.length === 0 ? (
-            <div className="text-center py-8">
-              <FileText className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" strokeWidth={1} />
-              <p className="text-muted-foreground">No documents uploaded yet</p>
+            <div className="py-10 text-center">
+              <FileText className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" strokeWidth={1.2} />
+              <p className="text-sm text-muted-foreground">No documents yet</p>
             </div>
           ) : (
             <div className="space-y-2">
               {documents.map((doc) => (
-                <div
-                  key={doc.id}
-                  className="flex items-center justify-between p-3 border border-border hover:bg-muted/50 transition-colors group"
-                  data-testid={`document-${doc.id}`}
-                >
-                  <div className="flex items-center gap-3">
-                    {getFileIcon(doc.file_type)}
-                    <div>
-                      <p className="font-medium text-sm truncate max-w-[200px]">
-                        {doc.filename}
-                      </p>
-                      <p className="text-xs text-muted-foreground font-mono">
-                        {doc.chunk_count} chunks • {formatDate(doc.upload_date)}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => onDelete(doc.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity text-red-500 hover:text-red-600 hover:bg-red-50"
-                    data-testid={`delete-${doc.id}`}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
+                <DocumentRow key={doc.id} doc={doc} onDelete={onDelete} />
               ))}
             </div>
           )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function StatCard({ icon: Icon, label, value, accent }) {
+  return (
+    <Card>
+      <CardContent className="flex items-center gap-3 p-4">
+        <div className={`grid h-10 w-10 place-items-center rounded-lg ${accent ? "bg-green-500/10" : "bg-primary/10"}`}>
+          <Icon className={`h-5 w-5 ${accent ? "text-green-500" : "text-primary"}`} />
+        </div>
+        <div className="min-w-0">
+          <p className="font-heading text-xl font-bold leading-none">{value}</p>
+          <p className="mt-1 text-[11px] uppercase tracking-wide text-muted-foreground">{label}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function DocumentRow({ doc, onDelete }) {
+  const date = doc.upload_date
+    ? new Date(doc.upload_date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "";
+
+  return (
+    <div className="group flex items-center justify-between rounded-lg border border-border p-3 transition-colors hover:bg-muted/40">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg ${doc.file_type === "pdf" ? "bg-red-500/10" : "bg-blue-500/10"}`}>
+          {doc.file_type === "pdf" ? (
+            <FileText className="h-4 w-4 text-red-500" />
+          ) : (
+            <File className="h-4 w-4 text-blue-500" />
+          )}
+        </div>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-medium">{doc.filename}</p>
+          <p className="font-mono text-[11px] text-muted-foreground">
+            {doc.chunk_count} chunks{date ? ` · ${date}` : ""}
+          </p>
+        </div>
+      </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => onDelete(doc.id)}
+        className="h-8 w-8 text-muted-foreground opacity-0 transition-opacity hover:text-red-500 group-hover:opacity-100"
+        aria-label="Delete document"
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
     </div>
   );
 }

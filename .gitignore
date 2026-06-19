@@ -43,3 +43,7 @@ htmlcov/
 *.log
 
 mongodb_data/
+
+# Local SQLite data store
+backend/data/
+*.db

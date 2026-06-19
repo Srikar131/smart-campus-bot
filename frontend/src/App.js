@@ -1,50 +1,50 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Toaster, toast } from 'sonner';
-import { Sidebar } from './components/Sidebar';
-import { ChatInterface } from './components/ChatInterface';
-import { DocumentManager } from './components/DocumentManager';
-import { v4 as uuidv4 } from 'uuid';
+import React, { useState, useEffect, useCallback } from "react";
+import { Toaster, toast } from "sonner";
+import { v4 as uuidv4 } from "uuid";
+import { Sidebar } from "./components/Sidebar";
+import { ChatInterface } from "./components/ChatInterface";
+import { DocumentManager } from "./components/DocumentManager";
+import { listDocuments, uploadDocument, deleteDocument } from "./lib/api";
+
+// Stable session id across reloads so chat history persists.
+function getSessionId() {
+  let id = localStorage.getItem("scb_session_id");
+  if (!id) {
+    id = uuidv4();
+    localStorage.setItem("scb_session_id", id);
+  }
+  return id;
+}
 
 function App() {
-  const [activeTab, setActiveTab] = useState('chat');
+  const [activeTab, setActiveTab] = useState("chat");
   const [isDark, setIsDark] = useState(false);
   const [documents, setDocuments] = useState([]);
   const [isLoadingDocs, setIsLoadingDocs] = useState(true);
-  const [sessionId] = useState(() => uuidv4());
+  const [sessionId] = useState(getSessionId);
 
-  // Handle theme
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      setIsDark(true);
-      document.documentElement.classList.add('dark');
-    }
+    const saved = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const dark = saved === "dark" || (!saved && prefersDark);
+    setIsDark(dark);
+    document.documentElement.classList.toggle("dark", dark);
   }, []);
 
   const toggleTheme = () => {
-    setIsDark(!isDark);
-    if (isDark) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    }
+    setIsDark((prev) => {
+      const next = !prev;
+      document.documentElement.classList.toggle("dark", next);
+      localStorage.setItem("theme", next ? "dark" : "light");
+      return next;
+    });
   };
 
-  // Fetch documents
   const fetchDocuments = useCallback(async () => {
     try {
-      const response = await fetch('/api/documents');
-      if (response.ok) {
-        const data = await response.json();
-        setDocuments(data);
-      }
-    } catch (error) {
-      console.error('Error fetching documents:', error);
-      toast.error('Failed to load documents');
+      setDocuments(await listDocuments());
+    } catch (e) {
+      toast.error("Failed to load documents");
     } finally {
       setIsLoadingDocs(false);
     }
@@ -54,80 +54,58 @@ function App() {
     fetchDocuments();
   }, [fetchDocuments]);
 
-  // Upload document
   const handleUpload = async (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-
     try {
-      const response = await fetch('/api/documents/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (response.ok) {
-        const newDoc = await response.json();
-        setDocuments((prev) => [...prev, newDoc]);
-        toast.success(`${file.name} uploaded successfully`);
-      } else {
-        const error = await response.json();
-        throw new Error(error.detail || 'Upload failed');
-      }
-    } catch (error) {
-      console.error('Error uploading document:', error);
-      toast.error(error.message || 'Failed to upload document');
+      const newDoc = await uploadDocument(file);
+      setDocuments((prev) => [newDoc, ...prev]);
+      toast.success(`${file.name} indexed successfully`);
+    } catch (e) {
+      toast.error(e.message || "Failed to upload document");
+      throw e;
     }
   };
 
-  // Delete document
   const handleDelete = async (docId) => {
     try {
-      const response = await fetch(`/api/documents/${docId}`, {
-        method: 'DELETE',
-      });
-
-      if (response.ok) {
-        setDocuments((prev) => prev.filter((doc) => doc.id !== docId));
-        toast.success('Document deleted');
-      } else {
-        throw new Error('Delete failed');
-      }
-    } catch (error) {
-      console.error('Error deleting document:', error);
-      toast.error('Failed to delete document');
+      await deleteDocument(docId);
+      setDocuments((prev) => prev.filter((d) => d.id !== docId));
+      toast.success("Document removed");
+    } catch (e) {
+      toast.error("Failed to delete document");
     }
   };
 
   return (
-    <div className="flex h-screen bg-background noise-bg relative">
-      <Toaster 
-        position="top-right" 
-        toastOptions={{
-          className: 'glass',
-        }}
-      />
-      
+    <div className="ambient flex h-screen overflow-hidden bg-background text-foreground">
+      <Toaster position="top-right" theme={isDark ? "dark" : "light"} richColors />
+
       <Sidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
         isDark={isDark}
         onThemeToggle={toggleTheme}
+        documentCount={documents.length}
       />
 
-      <main className="flex-1 overflow-hidden">
-        {/* Header */}
-        <header className="h-16 border-b border-border flex items-center px-6 glass">
-          <h1 className="font-heading text-2xl font-semibold">
-            {activeTab === 'chat' ? 'Smart Campus Bot' : 'Document Manager'}
-          </h1>
+      <main className="relative z-10 flex-1 flex flex-col overflow-hidden">
+        <header className="h-16 shrink-0 border-b border-border/60 flex items-center justify-between px-6 glass">
+          <div>
+            <h1 className="font-heading text-lg font-semibold leading-tight">
+              {activeTab === "chat" ? "Assistant" : "Knowledge Base"}
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              {activeTab === "chat"
+                ? "Ask questions about your campus documents"
+                : "Upload and manage source documents"}
+            </p>
+          </div>
         </header>
 
-        {/* Content */}
-        <div className="h-[calc(100vh-4rem)]">
-          {activeTab === 'chat' ? (
-            <ChatInterface sessionId={sessionId} />
+        <div className="flex-1 overflow-hidden">
+          {activeTab === "chat" ? (
+            <ChatInterface sessionId={sessionId} hasDocuments={documents.length > 0} />
           ) : (
-            <div className="p-6 overflow-y-auto h-full">
+            <div className="h-full overflow-y-auto p-6">
               <DocumentManager
                 documents={documents}
                 onUpload={handleUpload}

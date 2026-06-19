@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Playfair+Display:wght@600;700&family=JetBrains+Mono:wght@400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sora:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,40 +6,54 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 0 0% 10%;
+    --background: 220 33% 98%;
+    --foreground: 222 47% 11%;
+
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
-    --primary: 192 73% 21%;
+    --card-foreground: 222 47% 11%;
+
+    --muted: 220 20% 95%;
+    --muted-foreground: 220 12% 46%;
+
+    --border: 220 18% 90%;
+    --input: 220 18% 90%;
+
+    --primary: 243 75% 59%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 231 84% 60%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 328 94% 55%;
+
+    --accent: 262 83% 62%;
     --accent-foreground: 0 0% 100%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 231 84% 60%;
-    --radius: 0.25rem;
+
+    --ring: 243 75% 59%;
+    --radius: 0.75rem;
+
+    --brand-from: 243 75% 59%;
+    --brand-to: 262 83% 62%;
   }
 
   .dark {
-    --background: 222 47% 7%;
-    --foreground: 210 20% 98%;
-    --card: 222 47% 9%;
-    --card-foreground: 210 20% 98%;
-    --primary: 192 73% 21%;
+    --background: 224 47% 6%;
+    --foreground: 213 31% 95%;
+
+    --card: 224 39% 9%;
+    --card-foreground: 213 31% 95%;
+
+    --muted: 223 30% 15%;
+    --muted-foreground: 217 16% 62%;
+
+    --border: 223 28% 18%;
+    --input: 223 28% 18%;
+
+    --primary: 243 80% 67%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 231 84% 60%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 328 94% 55%;
+
+    --accent: 262 83% 70%;
     --accent-foreground: 0 0% 100%;
-    --border: 217 33% 17%;
-    --input: 217 33% 17%;
-    --ring: 231 84% 60%;
+
+    --ring: 243 80% 67%;
+
+    --brand-from: 243 80% 67%;
+    --brand-to: 262 83% 72%;
   }
 }
 
@@ -47,49 +61,78 @@
   * {
     @apply border-border;
   }
-  
+
   body {
-    @apply bg-background text-foreground font-body antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-feature-settings: 'cv11', 'ss01';
   }
 
-  h1, h2, h3 {
-    @apply font-heading tracking-tight;
+  h1, h2, h3, h4 {
+    font-family: 'Sora', 'Inter', sans-serif;
+    @apply tracking-tight;
   }
 }
 
-/* Noise texture overlay */
-.noise-bg::before {
+@layer components {
+  .brand-gradient {
+    background-image: linear-gradient(135deg, hsl(var(--brand-from)), hsl(var(--brand-to)));
+  }
+
+  .brand-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(var(--brand-from)), hsl(var(--brand-to)));
+  }
+
+  .glass {
+    @apply bg-card/70 backdrop-blur-xl border border-border/60;
+  }
+
+  .card-surface {
+    @apply bg-card border border-border rounded-xl;
+  }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { @apply bg-border rounded-full; }
+::-webkit-scrollbar-thumb:hover { @apply bg-muted-foreground/40; }
+
+/* Subtle ambient background glow */
+.ambient::before {
   content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.03;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background:
+    radial-gradient(50rem 50rem at 8% -10%, hsl(var(--brand-from) / 0.10), transparent 60%),
+    radial-gradient(40rem 40rem at 100% 110%, hsl(var(--brand-to) / 0.10), transparent 60%);
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
+/* Markdown answer formatting */
+.prose-chat { @apply text-sm leading-relaxed; }
+.prose-chat p { @apply my-2; }
+.prose-chat p:first-child { @apply mt-0; }
+.prose-chat p:last-child { @apply mb-0; }
+.prose-chat ul { @apply my-2 ml-5 list-disc space-y-1; }
+.prose-chat ol { @apply my-2 ml-5 list-decimal space-y-1; }
+.prose-chat h1, .prose-chat h2, .prose-chat h3 { @apply font-semibold mt-3 mb-1.5; }
+.prose-chat code { @apply font-mono text-[0.8em] bg-muted px-1.5 py-0.5 rounded; }
+.prose-chat pre { @apply bg-muted rounded-lg p-3 my-2 overflow-x-auto; }
+.prose-chat pre code { @apply bg-transparent p-0; }
+.prose-chat a { @apply text-primary underline underline-offset-2; }
+.prose-chat strong { @apply font-semibold; }
+.prose-chat table { @apply my-2 w-full border-collapse text-xs; }
+.prose-chat th, .prose-chat td { @apply border border-border px-2 py-1 text-left; }
 
-::-webkit-scrollbar-track {
-  @apply bg-muted;
+/* Animations */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
+.animate-fade-up { animation: fade-up 0.35s ease-out both; }
 
-::-webkit-scrollbar-thumb {
-  @apply bg-border rounded-full;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-muted-foreground/50;
-}
-
-/* Glassmorphism utility */
-.glass {
-  @apply bg-white/80 dark:bg-black/60 backdrop-blur-xl border border-white/20 shadow-lg;
-}
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.cursor-blink { animation: blink 1s step-end infinite; }
